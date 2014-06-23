@@ -1004,7 +1004,7 @@ class CFClient(object):
         if delete and not prefix:
             self._delete_objects_not_in_list(cont, object_prefix)
 
-        if fetch_uploaded and fetch_uploaded_file not None:
+        if fetch_uploaded and fetch_uploaded_file is not None:
             if len(uploaded_files) > 0:
                 f = open(fetch_uploaded_file, 'r+')
                 f.write(uploaded_files)
