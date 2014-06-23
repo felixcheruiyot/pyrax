@@ -885,7 +885,7 @@ class CFClient(object):
 
     def sync_folder_to_container(self, folder_path, container, delete=False,
             include_hidden=False, ignore=None, ignore_timestamps=False,
-            object_prefix="", verbose=False):
+            object_prefix="", verbose=False, fetch_uploaded= False, fetch_uploaded_file=None):
         """
         Compares the contents of the specified folder, and checks to make sure
         that the corresponding object is present in the specified container. If
@@ -931,17 +931,20 @@ class CFClient(object):
         self._sync_folder_to_container(folder_path, cont, prefix="",
                 delete=delete, include_hidden=include_hidden, ignore=ignore,
                 ignore_timestamps=ignore_timestamps,
-                object_prefix=object_prefix, verbose=verbose)
+                object_prefix=object_prefix, verbose=verbose,
+                fetch_uploaded= False, fetch_uploaded_file=None)
         # Unset the _remote_files
         self._remote_files = None
 
 
     def _sync_folder_to_container(self, folder_path, cont, prefix, delete,
-            include_hidden, ignore, ignore_timestamps, object_prefix, verbose):
+            include_hidden, ignore, ignore_timestamps, object_prefix, verbose,
+            fetch_uploaded= False, fetch_uploaded_file=None):
         """
         This is the internal method that is called recursively to handle
         nested folder structures.
         """
+        uploaded_files = [];
         fnames = os.listdir(folder_path)
         ignore = utils.coerce_string_to_list(ignore)
         log = logging.getLogger("pyrax")
@@ -991,13 +994,21 @@ class CFClient(object):
                 cont.upload_file(pth, obj_name=fullname_with_prefix,
                     etag=local_etag, return_none=True)
                 if verbose:
-                    log.info("%s UPLOADED", fullname)
+                    log.info("%s UPLOADED", fullname)                    
+                    uploaded_files.append(fullname)
+
             else:
                 if verbose:
                     log.info("%s NOT UPLOADED because it already exists",
                             fullname)
         if delete and not prefix:
             self._delete_objects_not_in_list(cont, object_prefix)
+
+        if fetch_uploaded and fetch_uploaded_file not None:
+            if len(uploaded_files) > 0:
+                f = open(fetch_uploaded_file, 'r+')
+                f.write(uploaded_files)
+                f.close()
 
 
         """
