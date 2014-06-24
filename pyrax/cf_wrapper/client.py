@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import logging
+import simplejson
 import datetime
 from functools import wraps
 import hashlib
@@ -932,7 +933,7 @@ class CFClient(object):
                 delete=delete, include_hidden=include_hidden, ignore=ignore,
                 ignore_timestamps=ignore_timestamps,
                 object_prefix=object_prefix, verbose=verbose,
-                fetch_uploaded= False, fetch_uploaded_file=None)
+                fetch_uploaded= fetch_uploaded, fetch_uploaded_file=fetch_uploaded_file)
         # Unset the _remote_files
         self._remote_files = None
 
@@ -1006,11 +1007,11 @@ class CFClient(object):
 
         if fetch_uploaded and fetch_uploaded_file is not None:
             if len(uploaded_files) > 0:
-                f = open(fetch_uploaded_file, 'r+')
-                f.write(uploaded_files)
+                f = open(fetch_uploaded_file, 'w+')
+                simplejson.dump(uploaded_files, f)
                 f.close()
 
-
+    def _delete_objects_not_in_list(self, cont, object_prefix=""):
         """
         Finds all the objects in the specified container that are not present
         in the self._local_files list, and deletes them.
